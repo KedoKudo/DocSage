@@ -1,0 +1,24 @@
+name: docsage
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  # base
+  - python=3.11
+  - pip
+  # pytorch
+  - pytorch
+  - torchvision
+  - torchaudio
+  # jupyter
+  - jupyterlab
+  - ipympl
+  # plot
+  - matplotlib
+  # pip
+  - pip:
+    - sentence-transformers
+    - langchain
+    - chromadb
+    - pypdf
