@@ -1,7 +1,7 @@
 """Simple chatbot based on the OLLAMA+RAG."""
 #!/usr/bin/env python
 import streamlit as st 
-from langchain.llms import Ollama
+from langchain_community.llms import Ollama
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 
@@ -53,11 +53,7 @@ model = LLM(
 
 # Chatbot
 st.title("Simple OLLAMA+RAG Chatbot")
+chat_container = st.empty()
 input_text = st.text_input("Your message:", key="chat_input")
-current_container = st.empty()
-
 if st.button("Send"):
-    # send the message to the chatbot
-    current_container.write_stream(
-        model.llm.stream(input_text)
-    )
+    chat_container.write_stream(model.llm.stream(input_text))
