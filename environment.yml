@@ -22,3 +22,4 @@ dependencies:
     - langchain
     - chromadb
     - pypdf
+    - streamlit
