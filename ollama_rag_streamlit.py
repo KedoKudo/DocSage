@@ -14,6 +14,7 @@ class LLM:
             temperature=temperature,
             callbacks=[StreamingStdOutCallbackHandler()],
         )
+        self.msg_history = []
 
     def set_model(self, model_name: str):
         self.model_name = model_name
@@ -29,31 +30,36 @@ class LLM:
         pass
 
 
-# Layout
-st.sidebar.title("Control Panel")
-model_selection = st.sidebar.selectbox(
-    "Select the Model",
-    options=["mistral", "llama2", "codellama"],
-)
-temperature = st.sidebar.slider(
-    "Temperature",
-    min_value=0.0,
-    max_value=1.0,
-    value=0.5,
-)
-uploaded_file = st.sidebar.file_uploader(
-    "Upload a file for RAG",
-    type=['pdf'],
-)
+def main():
+    # Layout
+    st.sidebar.title("Control Panel")
+    model_selection = st.sidebar.selectbox(
+        "Select the Model",
+        options=["mistral", "llama2", "codellama"],
+    )
+    temperature = st.sidebar.slider(
+        "Temperature",
+        min_value=0.0,
+        max_value=1.0,
+        value=0.5,
+    )
+    uploaded_file = st.sidebar.file_uploader(
+        "Upload a file for RAG",
+        type=['pdf'],
+    )
 
-model = LLM(
-    model_name=model_selection,
-    temperature=temperature,
-)
+    model = LLM(
+        model_name=model_selection,
+        temperature=temperature,
+    )
 
-# Chatbot
-st.title("Simple OLLAMA+RAG Chatbot")
-chat_container = st.empty()
-input_text = st.text_input("Your message:", key="chat_input")
-if st.button("Send"):
-    chat_container.write_stream(model.llm.stream(input_text))
+    # Chatbot
+    st.title("Simple OLLAMA+RAG Chatbot")
+    chat_container = st.empty()
+    input_text = st.text_input("Your message:", key="chat_input")
+    if st.button("Send"):
+        chat_container.write_stream(model.llm.stream(input_text))
+
+
+if __name__ == "__main__":
+    main()
