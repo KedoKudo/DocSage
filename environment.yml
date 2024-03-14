@@ -7,6 +7,8 @@ dependencies:
   # base
   - python=3.11
   - pip
+  - versioningit
+  - pre-commit
   # gui
   - panel
   # pytorch
