@@ -26,7 +26,7 @@ model = LLM(
 )
 
 # Chatbot
-st.title("Simple OLLAMA+RAG Chatbot")
+st.title("DocSAGE Chatbot")
 
 # Initialize chat history
 if "messages" not in st.session_state:
