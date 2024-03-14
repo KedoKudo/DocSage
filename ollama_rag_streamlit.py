@@ -1,5 +1,7 @@
 """Simple chatbot based on the OLLAMA+RAG."""
 #!/usr/bin/env python
+import os
+import tempfile
 import streamlit as st
 from docsage.model import LLM
 
@@ -13,11 +15,12 @@ temperature = st.sidebar.slider(
     "Temperature",
     min_value=0.0,
     max_value=1.0,
-    value=0.5,
+    value=0.85,
 )
 uploaded_file = st.sidebar.file_uploader(
     "Upload a file for RAG",
     type=["pdf"],
+    accept_multiple_files=True,
 )
 
 model = LLM(
@@ -45,7 +48,28 @@ if user_prompt:
         st.write(user_prompt)
 
     # display response
-    with st.spinner("Thinking..."):
-        msg = st.write_stream(model.llm.stream(user_prompt))
+    if uploaded_file:
+        # ingest
+        for file in uploaded_file:
+            with tempfile.NamedTemporaryFile(delete=False) as tf:
+                tf.write(file.getbuffer())
+                file_path = tf.name
+
+            with st.spinner(f"Ingesting {file.name}"):
+                model.update_vectordb(file_path)
+
+            os.remove(file_path)
+        #
+        with st.spinner("Thinking..."), st.chat_message("assistant"):
+            msg = st.write_stream(model.qa.stream(user_prompt))
+        # cache
         st.session_state.messages.append({"role": "user", "content": user_prompt})
-        st.session_state.messages.append({"role": "bot", "content": msg})
+        st.session_state.messages.append(
+            {"role": "assistant", "content": msg[0]["result"]}
+        )
+    else:
+        with st.spinner("Thinking..."), st.chat_message("ai"):
+            msg = st.write_stream(model.llm.stream(user_prompt))
+        # cache
+        st.session_state.messages.append({"role": "user", "content": user_prompt})
+        st.session_state.messages.append({"role": "ai", "content": msg})
