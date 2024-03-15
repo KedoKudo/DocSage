@@ -4,6 +4,7 @@ import os
 import tempfile
 import streamlit as st
 from docsage.model import LLM
+from langchain_community.callbacks import StreamlitCallbackHandler
 
 # Layout
 st.sidebar.title("Control Panel")
@@ -23,11 +24,6 @@ uploaded_file = st.sidebar.file_uploader(
     accept_multiple_files=True,
 )
 
-model = LLM(
-    model_name=model_selection,
-    temperature=temperature,
-)
-
 # Chatbot
 st.title("DocSAGE Chatbot")
 
@@ -38,11 +34,16 @@ if "messages" not in st.session_state:
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+        container = st.container()
+        container.write(message["content"])
+        # st.markdown(message["content"])
 
-user_prompt = st.chat_input("Ask me anything", key="chat_input")
+model = LLM(
+    model_name=model_selection,
+    temperature=temperature,
+)
 
-if user_prompt:
+if user_prompt := st.chat_input("Ask me anything", key="chat_input"):
     # display input prompt
     with st.chat_message("user"):
         st.write(user_prompt)
@@ -59,17 +60,17 @@ if user_prompt:
                 model.update_vectordb(file_path)
 
             os.remove(file_path)
-        #
-        with st.spinner("Thinking..."), st.chat_message("assistant"):
-            msg = st.write_stream(model.qa.stream(user_prompt))
-        # cache
-        st.session_state.messages.append({"role": "user", "content": user_prompt})
-        st.session_state.messages.append(
-            {"role": "assistant", "content": msg[0]["result"]}
-        )
-    else:
-        with st.spinner("Thinking..."), st.chat_message("ai"):
-            msg = st.write_stream(model.llm.stream(user_prompt))
-        # cache
-        st.session_state.messages.append({"role": "user", "content": user_prompt})
-        st.session_state.messages.append({"role": "ai", "content": msg})
+    #
+    with st.chat_message("🦖"):
+        callback = StreamlitCallbackHandler(st.container())
+        model.set_callbacks(callback)
+        response = model.qa.invoke(user_prompt)
+        msg = response["result"] if isinstance(response, dict) else response
+        # callback._current_thought._container.update(
+        #     label="",
+        #     state="complete",
+        #     expanded=True,
+        # )
+
+    st.session_state.messages.append({"role": "user", "content": user_prompt})
+    st.session_state.messages.append({"role": "🦖", "content": msg})
