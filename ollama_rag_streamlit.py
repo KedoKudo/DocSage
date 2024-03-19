@@ -62,15 +62,22 @@ if user_prompt := st.chat_input("Ask me anything", key="chat_input"):
             os.remove(file_path)
     #
     with st.chat_message("🦖"):
-        callback = StreamlitCallbackHandler(st.container())
+        callback = StreamlitCallbackHandler(
+            st.container(), collapse_completed_thoughts=False
+        )
+
+        # Monkey patch to remove the default empty text in a container
+        # org_on_llm_start = callback.on_llm_start
+
+        # def new_on_llm_start(*args, **kwargs):
+        #     org_on_llm_start(*args, **kwargs)
+        #     callback._current_thought._container.write("")
+
+        # callback.on_llm_start = new_on_llm_start
+
         model.set_callbacks(callback)
         response = model.qa.invoke(user_prompt)
         msg = response["result"] if isinstance(response, dict) else response
-        # callback._current_thought._container.update(
-        #     label="",
-        #     state="complete",
-        #     expanded=True,
-        # )
 
     st.session_state.messages.append({"role": "user", "content": user_prompt})
     st.session_state.messages.append({"role": "🦖", "content": msg})

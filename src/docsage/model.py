@@ -74,5 +74,5 @@ class LLM:
         else:
             self.vector_db = Chroma.from_documents(
                 all_splits,
-                embedding_function=self.embeddings,
+                embedding=self.embeddings,
             )
