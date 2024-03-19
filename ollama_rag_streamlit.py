@@ -10,7 +10,16 @@ from langchain_community.callbacks import StreamlitCallbackHandler
 st.sidebar.title("Control Panel")
 model_selection = st.sidebar.selectbox(
     "Select the Model",
-    options=["mistral", "llama2", "codellama"],
+    options=[
+        "mistral",
+        "mistral-openorca",
+        "llama2",
+        "llama2-uncensored",
+        "gemma",
+        "phi",
+        "qwen",
+        "codellama",
+    ],
 )
 temperature = st.sidebar.slider(
     "Temperature",
@@ -20,7 +29,7 @@ temperature = st.sidebar.slider(
 )
 uploaded_file = st.sidebar.file_uploader(
     "Upload a file for RAG",
-    type=["pdf"],
+    type=["pdf", "txt"],
     accept_multiple_files=True,
 )
 

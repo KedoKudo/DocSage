@@ -3,10 +3,11 @@
 from langchain_community.llms import Ollama
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain_community.embeddings import OllamaEmbeddings
-from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain.chains import RetrievalQA
+from langchain.memory import ConversationBufferMemory
 
 
 class LLM:
@@ -32,10 +33,24 @@ class LLM:
         self.vector_db = None
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1024,
-            chunk_overlap=100,
+            chunk_overlap=64,
         )
         #
-        self.qa = self.llm
+        self.memory = ConversationBufferMemory(
+            memory_key="chat_history", return_messages=True
+        )
+
+    @property
+    def qa(self):
+        if self.vector_db:
+            return RetrievalQA.from_chain_type(
+                llm=self.llm,
+                chain_type="stuff",
+                retriever=self.vector_db.as_retriever(),
+                memory=self.memory,
+            )
+        else:
+            return self.llm
 
     def set_model(self, model_name: str):
         self.model_name = model_name
@@ -59,18 +74,15 @@ class LLM:
         new_file : str
             The path to the new file.
         """
-        loader = PyPDFLoader(new_file)
+        # decide which loader to use
+        if new_file.endswith(".pdf"):
+            loader = PyPDFLoader(new_file)
+        else:
+            loader = TextLoader(new_file)
         pages = loader.load_and_split()
         all_splits = self.text_splitter.split_documents(pages)
         if self.vector_db:
             self.vector_db.add_documents(all_splits)
-            self.qa = RetrievalQA.from_chain_type(
-                llm=self.llm,
-                chain_type="stuff",
-                retriever=self.vector_db.as_retriever(
-                    search_kwargs={"k": 4},
-                ),
-            )
         else:
             self.vector_db = Chroma.from_documents(
                 all_splits,

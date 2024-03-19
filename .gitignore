@@ -163,3 +163,4 @@ cython_debug/
 chroma_db
 
 _version.py
+data/.DS_Store
