@@ -112,7 +112,7 @@ class LLM:
         logger.debug(f"Setting temperature to {temperature}")
         self.llm.temperature = temperature
 
-    def update_vectordb(self, new_file: str):
+    def update_vectordb(self, new_file: str, file_type: str = "pdf"):
         """Load the new file into the vector database.
 
         Parameters
@@ -122,10 +122,13 @@ class LLM:
         """
         logger.debug(f"Updating vector database with {new_file}")
         # decide which loader to use
-        if new_file.endswith(".pdf"):
+        if file_type == "pdf":
             loader = PyPDFLoader(new_file)
-        else:
+        elif file_type == "txt":
             loader = TextLoader(new_file)
+        else:
+            raise ValueError(f"Unsupported file type: {file_type}")
+
         pages = loader.load_and_split()
         all_splits = self.text_splitter.split_documents(pages)
         if self.vector_db:

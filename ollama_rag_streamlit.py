@@ -45,7 +45,7 @@ db_selection = st.sidebar.selectbox(
 )
 
 # Chatbot
-st.title("DocSAGE Chatbot")
+st.title("DocSage")
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -61,12 +61,8 @@ for message in st.session_state.messages:
 model = LLM(
     model_name=model_selection,
     temperature=temperature,
+    knowledge_base=db_selection,
 )
-# load the selected knowledge base
-if db_selection == "None":
-    model.set_knowledge_base(db_selection)
-elif db_selection == "iMars3D":
-    model.set_knowledge_base(db_selection)
 
 # Chatbot interface
 if user_prompt := st.chat_input("Ask me anything", key="chat_input"):
@@ -83,7 +79,15 @@ if user_prompt := st.chat_input("Ask me anything", key="chat_input"):
                 file_path = tf.name
 
             with st.spinner(f"Ingesting {file.name}"):
-                model.update_vectordb(file_path)
+                # determine the type of file
+                if file.name.endswith(".pdf"):
+                    model.update_vectordb(file_path, file_type="pdf")
+                elif file.name.endswith(".txt"):
+                    model.update_vectordb(file_path, file_type="txt")
+                else:
+                    st.error("Unsupported file type")
+                    os.remove(file_path)
+                    continue
 
             os.remove(file_path)
     #
