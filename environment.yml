@@ -27,3 +27,8 @@ dependencies:
     - chromadb
     - pypdf
     - streamlit
+    - ollama
+    - tree-sitter
+    - tree-sitter-languages
+    - pypandoc
+    - unstructured

@@ -1,5 +1,6 @@
 """Main LLM interface class."""
 #!/usr/bin/env python
+import logging
 from langchain_community.llms import Ollama
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain_community.embeddings import OllamaEmbeddings
@@ -10,9 +11,21 @@ from langchain.chains import RetrievalQA
 from langchain.memory import ConversationBufferMemory
 
 
+logger = logging.getLogger(__name__)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger.setLevel(logging.DEBUG)
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+logger.addHandler(stream_handler)
+
+
 class LLM:
     def __init__(
-        self, model_name: str = "mistral", temperature: float = 0.5, callbacks=None
+        self,
+        model_name: str = "mistral",
+        temperature: float = 0.5,
+        callbacks=None,
+        knowledge_base: str = "None",
     ):
         self.model_name = model_name
         self.callback = (
@@ -25,12 +38,8 @@ class LLM:
         )
         self.msg_history = []
         self.embeddings = OllamaEmbeddings()
-        # start a default chroma vector database for RAG model
-        # self.vector_db = Chroma(
-        #     # persist_directory="./chroma_db",
-        #     embedding_function=self.embeddings,
-        # )
-        self.vector_db = None
+        self.set_knowledge_base(knowledge_base)
+        # for dynamic RAG
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1024,
             chunk_overlap=64,
@@ -43,6 +52,7 @@ class LLM:
     @property
     def qa(self):
         if self.vector_db:
+            logger.debug(f"Using RAG with {self.model_name}")
             return RetrievalQA.from_chain_type(
                 llm=self.llm,
                 chain_type="stuff",
@@ -50,9 +60,37 @@ class LLM:
                 memory=self.memory,
             )
         else:
+            logger.debug(f"Using LLM: {self.model_name}")
             return self.llm
 
+    def set_knowledge_base(self, kb_name: str):
+        """Set the knowledge base for the RAG model.
+
+        Parameters
+        ----------
+        kb_name : str
+            The name of the knowledge base.
+        """
+        if kb_name == "None":
+            logger.debug("No knowledge base selected")
+            self.vector_db = None
+        else:
+            logger.debug(f"Loading knowledge base: {kb_name}")
+            kb_path = f"vectorDB/{kb_name.lower()}"
+            self.vector_db = Chroma(
+                persist_directory=kb_path,
+                embedding_function=self.embeddings,
+            )
+
     def set_model(self, model_name: str):
+        """Set the model to use.
+
+        Parameters
+        ----------
+        model_name : str
+            The name of the model to use.
+        """
+        logger.debug(f"Setting model to {model_name}")
         self.model_name = model_name
         self.llm = Ollama(
             model=model_name,
@@ -64,6 +102,14 @@ class LLM:
         self.llm.callbacks = [self.callback]
 
     def set_temperature(self, temperature: float):
+        """Set the temperature for the model.
+
+        Parameters
+        ----------
+        temperature : float
+            The temperature to set.
+        """
+        logger.debug(f"Setting temperature to {temperature}")
         self.llm.temperature = temperature
 
     def update_vectordb(self, new_file: str):
@@ -74,6 +120,7 @@ class LLM:
         new_file : str
             The path to the new file.
         """
+        logger.debug(f"Updating vector database with {new_file}")
         # decide which loader to use
         if new_file.endswith(".pdf"):
             loader = PyPDFLoader(new_file)

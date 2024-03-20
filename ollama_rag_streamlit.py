@@ -3,24 +3,24 @@
 import os
 import tempfile
 import streamlit as st
+import ollama
 from docsage.model import LLM
 from langchain_community.callbacks import StreamlitCallbackHandler
 
 # Layout
+# get list of models available
+ollama_models = ollama.list()["models"]
 st.sidebar.title("Control Panel")
 model_selection = st.sidebar.selectbox(
     "Select the Model",
-    options=[
-        "mistral",
-        "mistral-openorca",
-        "llama2",
-        "llama2-uncensored",
-        "gemma",
-        "phi",
-        "qwen",
-        "codellama",
-    ],
+    options=[model["name"] for model in ollama_models],
 )
+selected_model = next(
+    (model for model in ollama_models if model["name"] == model_selection), None
+)
+if selected_model:
+    st.sidebar.write(f"Size/GB: {float(selected_model['size'])/(1024**3):.2f}")
+
 temperature = st.sidebar.slider(
     "Temperature",
     min_value=0.0,
@@ -31,6 +31,17 @@ uploaded_file = st.sidebar.file_uploader(
     "Upload a file for RAG",
     type=["pdf", "txt"],
     accept_multiple_files=True,
+)
+
+# select pre-processed knowledge base
+db_selection = st.sidebar.selectbox(
+    "Select the knowledge base",
+    options=[
+        "None",
+        # "Mantid",
+        # "HyGNN",
+        "iMars3D",
+    ],
 )
 
 # Chatbot
@@ -45,13 +56,19 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         container = st.container()
         container.write(message["content"])
-        # st.markdown(message["content"])
 
+# Initialize the model
 model = LLM(
     model_name=model_selection,
     temperature=temperature,
 )
+# load the selected knowledge base
+if db_selection == "None":
+    model.set_knowledge_base(db_selection)
+elif db_selection == "iMars3D":
+    model.set_knowledge_base(db_selection)
 
+# Chatbot interface
 if user_prompt := st.chat_input("Ask me anything", key="chat_input"):
     # display input prompt
     with st.chat_message("user"):
