@@ -31,7 +31,6 @@ https://github.com/KedoKudo/DocSage
 ## Ollama(🦙)
 
 ![Ollama](https://ollama.com/public/ollama.png)
-
 https://ollama.com, https://github.com/ollama/ollama
 
 ```bash
@@ -77,22 +76,26 @@ pip install streamlit
 ### Case 1: simple interaction with DocSage
 
 - testing prompt: "What is Mantid?"
-- temperature: 0.1, 0.5, 0.9
+    - temperature: 0.1, 0.5, 0.9
+- testing prompt: "What is ornl-next?"
+    - temperature: 0.1, 0.5, 0.9
 
 ---
 
 ### Case 2: chat with your documents
 
+- testing prompt: "What is Mantid?"
+    - temperature: 0.1, 0.5, 0.9
 - testing prompt: "What is ornl-next?"
-- temperature: 0.1, 0.5, 0.9
+    - temperature: 0.1, 0.5, 0.9
 
 ---
 
 ### Case 3: chat with knowledge base
 
-- testing prompt: "Provide a python script to calibrate PowGEN detector with mantid"
-- temperature: 0.1, 0.5, 0.9
-- knowledge base: Mantid
+- testing prompt: "Give me step-by-step instruction on creating new algoirthm for Mantid"
+    - temperature: 0.1, 0.5, 0.9
+    - knowledge base: Mantid
 
 ---
 
