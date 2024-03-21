@@ -1,13 +1,16 @@
 """Simple chatbot based on the OLLAMA+RAG."""
 #!/usr/bin/env python
 import os
+import json
 import tempfile
 import streamlit as st
 import ollama
 from docsage.model import LLM
 from langchain_community.callbacks import StreamlitCallbackHandler
 
-# Layout
+# ------------------------------
+# --------- Control Panel ------
+# ------------------------------
 # get list of models available
 ollama_models = ollama.list()["models"]
 st.sidebar.title("Control Panel")
@@ -25,7 +28,7 @@ temperature = st.sidebar.slider(
     "Temperature",
     min_value=0.0,
     max_value=1.0,
-    value=0.85,
+    value=0.5,
 )
 uploaded_file = st.sidebar.file_uploader(
     "Upload a file for RAG",
@@ -38,14 +41,26 @@ db_selection = st.sidebar.selectbox(
     "Select the knowledge base",
     options=[
         "None",
-        # "Mantid",
-        # "HyGNN",
+        "Mantid",
         "iMars3D",
     ],
 )
 
-# Chatbot
-st.title("DocSage")
+# Initialize the model
+model = LLM(
+    model_name=model_selection,
+    temperature=temperature,
+    knowledge_base=db_selection,
+)
+
+# add a reset context button
+if st.sidebar.button("Reset Context"):
+    model.reset_context()
+
+# ------------------------------
+# --------- Chatbot UI ---------
+# ------------------------------
+st.image("resources/icon.png", width=50)
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -56,13 +71,6 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         container = st.container()
         container.write(message["content"])
-
-# Initialize the model
-model = LLM(
-    model_name=model_selection,
-    temperature=temperature,
-    knowledge_base=db_selection,
-)
 
 # Chatbot interface
 if user_prompt := st.chat_input("Ask me anything", key="chat_input"):
@@ -91,7 +99,7 @@ if user_prompt := st.chat_input("Ask me anything", key="chat_input"):
 
             os.remove(file_path)
     #
-    with st.chat_message("🦖"):
+    with st.chat_message("🧙🏼‍♂️"):
         callback = StreamlitCallbackHandler(
             st.container(), collapse_completed_thoughts=False
         )
@@ -110,4 +118,23 @@ if user_prompt := st.chat_input("Ask me anything", key="chat_input"):
         msg = response["result"] if isinstance(response, dict) else response
 
     st.session_state.messages.append({"role": "user", "content": user_prompt})
-    st.session_state.messages.append({"role": "🦖", "content": msg})
+    st.session_state.messages.append({"role": "🧙🏼‍♂️", "content": msg})
+
+# add a button to clean the chat history only if there is chat history
+if st.session_state.messages:
+    cols = st.columns(6, gap="large")
+
+    with cols[0]:
+        if st.button("🗑️"):
+            st.session_state.messages = []
+            st.experimental_rerun()
+
+    with cols[-1]:
+        # button to save the chat history to file to save to disk
+        if st.download_button(
+            "💾",
+            data=json.dumps(st.session_state.messages, indent=2),
+            file_name="chat_history.json",
+            mime="application/json",
+        ):
+            pass

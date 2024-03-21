@@ -36,13 +36,13 @@ class LLM:
             temperature=temperature,
             callbacks=[self.callback],
         )
-        self.msg_history = []
-        self.embeddings = OllamaEmbeddings()
+        # use nomic-embed-text model for embeddings
+        self.embeddings = OllamaEmbeddings(model="nomic-embed-text")
         self.set_knowledge_base(knowledge_base)
         # for dynamic RAG
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1024,
-            chunk_overlap=64,
+            chunk_size=4096,
+            chunk_overlap=128,
         )
         #
         self.memory = ConversationBufferMemory(
@@ -62,6 +62,11 @@ class LLM:
         else:
             logger.debug(f"Using LLM: {self.model_name}")
             return self.llm
+
+    def reset_context(self):
+        """Reset the context of the model."""
+        logger.debug("Resetting context")
+        self.set_knowledge_base("None")  # clean the loaded knowledge base
 
     def set_knowledge_base(self, kb_name: str):
         """Set the knowledge base for the RAG model.
