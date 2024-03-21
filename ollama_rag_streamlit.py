@@ -11,6 +11,7 @@ from langchain_community.callbacks import StreamlitCallbackHandler
 # ------------------------------
 # --------- Control Panel ------
 # ------------------------------
+display_buttons = False
 # get list of models available
 ollama_models = ollama.list()["models"]
 st.sidebar.title("Control Panel")
@@ -115,13 +116,14 @@ if user_prompt := st.chat_input("Ask me anything", key="chat_input"):
 
         model.set_callbacks(callback)
         response = model.qa.invoke(user_prompt)
+        display_buttons = True
         msg = response["result"] if isinstance(response, dict) else response
 
     st.session_state.messages.append({"role": "user", "content": user_prompt})
     st.session_state.messages.append({"role": "🧙🏼‍♂️", "content": msg})
 
 # add a button to clean the chat history only if there is chat history
-if st.session_state.messages:
+if st.session_state.messages and display_buttons:
     cols = st.columns(6, gap="large")
 
     with cols[0]:
@@ -131,10 +133,11 @@ if st.session_state.messages:
 
     with cols[-1]:
         # button to save the chat history to file to save to disk
-        if st.download_button(
+        st.download_button(
             "💾",
             data=json.dumps(st.session_state.messages, indent=2),
             file_name="chat_history.json",
             mime="application/json",
-        ):
-            pass
+        )
+
+    display_buttons = False
