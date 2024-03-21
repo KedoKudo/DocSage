@@ -1,0 +1,15 @@
+vectorDB/mantid/f09f4b3d-d4c2-4e0b-b7f5-fd303fa1e489/link_lists.bin filter=lfs diff=lfs merge=lfs -text
+vectorDB/imars3d/af9bd91b-2504-4279-8f38-1d18169d6ad7/length.bin filter=lfs diff=lfs merge=lfs -text
+vectorDB/imars3d/chroma.sqlite3 filter=lfs diff=lfs merge=lfs -text
+vectorDB/mantid/chroma.sqlite3 filter=lfs diff=lfs merge=lfs -text
+vectorDB/mantid/f09f4b3d-d4c2-4e0b-b7f5-fd303fa1e489/length.bin filter=lfs diff=lfs merge=lfs -text
+vectorDB/imars3d filter=lfs diff=lfs merge=lfs -text
+vectorDB/imars3d/af9bd91b-2504-4279-8f38-1d18169d6ad7 filter=lfs diff=lfs merge=lfs -text
+vectorDB/imars3d/af9bd91b-2504-4279-8f38-1d18169d6ad7/header.bin filter=lfs diff=lfs merge=lfs -text
+vectorDB/imars3d/af9bd91b-2504-4279-8f38-1d18169d6ad7/link_lists.bin filter=lfs diff=lfs merge=lfs -text
+vectorDB/mantid/f09f4b3d-d4c2-4e0b-b7f5-fd303fa1e489/header.bin filter=lfs diff=lfs merge=lfs -text
+vectorDB/mantid/f09f4b3d-d4c2-4e0b-b7f5-fd303fa1e489/index_metadata.pickle filter=lfs diff=lfs merge=lfs -text
+vectorDB/imars3d/af9bd91b-2504-4279-8f38-1d18169d6ad7/data_level0.bin filter=lfs diff=lfs merge=lfs -text
+vectorDB/mantid filter=lfs diff=lfs merge=lfs -text
+vectorDB/mantid/f09f4b3d-d4c2-4e0b-b7f5-fd303fa1e489 filter=lfs diff=lfs merge=lfs -text
+vectorDB/mantid/f09f4b3d-d4c2-4e0b-b7f5-fd303fa1e489/data_level0.bin filter=lfs diff=lfs merge=lfs -text
