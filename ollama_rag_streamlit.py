@@ -30,6 +30,7 @@ temperature = st.sidebar.slider(
     max_value=1.0,
     value=0.5,
 )
+
 uploaded_file = st.sidebar.file_uploader(
     "Upload a file for RAG",
     type=["pdf", "txt"],
@@ -40,17 +41,21 @@ uploaded_file = st.sidebar.file_uploader(
 db_selection = st.sidebar.selectbox(
     "Select the knowledge base",
     options=[
-        "None",
         "Mantid",
         "iMars3D",
     ],
+    index=None,
 )
+
+# toggle to show/hide source documents for RAG
+show_source_documents = st.sidebar.checkbox("Show source documents", value=False)
 
 # Initialize the model
 model = LLM(
     model_name=model_selection,
     temperature=temperature,
     knowledge_base=db_selection,
+    return_source_documents=show_source_documents,
 )
 
 # add a reset context button
@@ -122,18 +127,14 @@ if user_prompt := st.chat_input("Ask me anything", key="chat_input"):
             st.container(), collapse_completed_thoughts=False
         )
 
-        # Monkey patch to remove the default empty text in a container
-        # org_on_llm_start = callback.on_llm_start
-
-        # def new_on_llm_start(*args, **kwargs):
-        #     org_on_llm_start(*args, **kwargs)
-        #     callback._current_thought._container.write("")
-
-        # callback.on_llm_start = new_on_llm_start
-
         model.set_callbacks(callback)
         response = model.qa.invoke(user_prompt)
         msg = response["result"] if isinstance(response, dict) else response
+
+        # if show source documents, display them
+        if show_source_documents:
+            src_docs = response.get("source_documents", None)
+            st.markdown("source docs", help=str(src_docs))
 
     st.session_state.messages.append({"role": "user", "content": user_prompt})
     st.session_state.messages.append({"role": "🧙🏼‍♂️", "content": msg})

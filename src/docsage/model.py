@@ -26,6 +26,7 @@ class LLM:
         temperature: float = 0.5,
         callbacks=None,
         knowledge_base: str = "None",
+        return_source_documents: bool = False,
     ):
         self.model_name = model_name
         self.callback = (
@@ -46,8 +47,13 @@ class LLM:
         )
         #
         self.memory = ConversationBufferMemory(
-            memory_key="chat_history", return_messages=True
+            memory_key="chat_history",
+            return_messages=True,
+            input_key="query",
+            output_key="result",
         )
+        #
+        self.return_source_documents = return_source_documents
 
     @property
     def qa(self):
@@ -58,6 +64,7 @@ class LLM:
                 chain_type="stuff",
                 retriever=self.vector_db.as_retriever(),
                 memory=self.memory,
+                return_source_documents=self.return_source_documents,
             )
         else:
             logger.debug(f"Using LLM: {self.model_name}")
@@ -66,7 +73,8 @@ class LLM:
     def reset_context(self):
         """Reset the context of the model."""
         logger.debug("Resetting context")
-        self.set_knowledge_base("None")  # clean the loaded knowledge base
+        self.set_knowledge_base(None)  # clean the loaded knowledge base
+        self.memory.clear()
 
     def set_knowledge_base(self, kb_name: str):
         """Set the knowledge base for the RAG model.
@@ -76,16 +84,16 @@ class LLM:
         kb_name : str
             The name of the knowledge base.
         """
-        if kb_name == "None":
-            logger.debug("No knowledge base selected")
-            self.vector_db = None
-        else:
+        if kb_name:
             logger.debug(f"Loading knowledge base: {kb_name}")
             kb_path = f"vectorDB/{kb_name.lower()}"
             self.vector_db = Chroma(
                 persist_directory=kb_path,
                 embedding_function=self.embeddings,
             )
+        else:
+            logger.debug("No knowledge base loaded")
+            self.vector_db = None
 
     def set_model(self, model_name: str):
         """Set the model to use.
