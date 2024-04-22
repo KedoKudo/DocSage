@@ -8,6 +8,7 @@ import ollama
 from docsage.model import LLM
 from langchain_community.callbacks import StreamlitCallbackHandler
 
+
 # ------------------------------
 # --------- Control Panel ------
 # ------------------------------
@@ -124,7 +125,8 @@ if user_prompt := st.chat_input("Ask me anything", key="chat_input"):
     #
     with st.chat_message("🧙🏼‍♂️"):
         callback = StreamlitCallbackHandler(
-            st.container(), collapse_completed_thoughts=False
+            st.container(),
+            collapse_completed_thoughts=False,
         )
 
         model.set_callbacks(callback)

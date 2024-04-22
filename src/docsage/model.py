@@ -4,7 +4,7 @@ import logging
 from langchain_community.llms import Ollama
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain_community.embeddings import OllamaEmbeddings
-from langchain_community.document_loaders import PyPDFLoader, TextLoader
+from langchain_community.document_loaders import TextLoader, PyMuPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain.chains import RetrievalQA
@@ -136,13 +136,15 @@ class LLM:
         logger.debug(f"Updating vector database with {new_file}")
         # decide which loader to use
         if file_type == "pdf":
-            loader = PyPDFLoader(new_file)
+            # loader = PyPDFLoader(new_file)
+            loader = PyMuPDFLoader(new_file)
         elif file_type == "txt":
             loader = TextLoader(new_file)
         else:
             raise ValueError(f"Unsupported file type: {file_type}")
 
-        pages = loader.load_and_split()
+        # pages = loader.load_and_split()
+        pages = loader.load()
         all_splits = self.text_splitter.split_documents(pages)
         if self.vector_db:
             self.vector_db.add_documents(all_splits)
