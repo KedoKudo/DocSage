@@ -15,6 +15,11 @@ brew service start ollama
 
 - Create a new virtual environment and install the required packages with `environment.yml`
 
+- Install `DocSage` as a package:
+```bash
+pip install -e .
+```
+
 - Start the webapp with the following command:
 ```bash
 streamlit run ollama_rag_streamlit.py
