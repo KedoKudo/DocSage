@@ -29,7 +29,7 @@ temperature = st.sidebar.slider(
     "Temperature",
     min_value=0.0,
     max_value=1.0,
-    value=0.5,
+    value=0.1,
 )
 
 uploaded_file = st.sidebar.file_uploader(
@@ -42,6 +42,7 @@ uploaded_file = st.sidebar.file_uploader(
 db_selection = st.sidebar.selectbox(
     "Select the knowledge base",
     options=[
+        "bm3dornl",
         "Mantid",
         "iMars3D",
     ],
@@ -85,7 +86,7 @@ if st.session_state.messages:
     with cols[0]:
         if st.button("🗑️"):
             st.session_state.messages = []
-            st.experimental_rerun()
+            st.rerun()
 
     with cols[-1]:
         # button to save the chat history to file to save to disk
